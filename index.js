@@ -1,18 +1,24 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import routes from './src/routes/route.js';
+import config from './src/config/index.js';
 
-dotenv.config();
 
-const PORT = process.env.PORT || 3000;
 const app = express();
-
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+console.log(config)
+mongoose.connect(config.mongoDBURL).then(() => console.log('MongoDB connected')).catch(err => console.error('DB Connection Failed', err));
+
 
 app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+app.use("/api", routes)
+
+app.listen(config.port, () => {
+    console.log(`Server is running on http://localhost:${config.port}`);
 });
