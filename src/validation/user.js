@@ -2,7 +2,8 @@ import { body } from 'express-validator';
 
 const validateRegister = [
     body('name').trim().notEmpty().withMessage('Name is required'),
-    body('email').isEmail().withMessage('Invalid email format').normalizeEmail(),
+    body('email').isEmail().withMessage('Invalid email format').normalizeEmail({  gmail_remove_dots: false,
+        all_lowercase: false}),
     body('password')
         .isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
         .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter')
@@ -12,7 +13,8 @@ const validateRegister = [
 ];
 
 const validateLogin = [
-    body('email').isEmail().withMessage('Invalid email format').normalizeEmail(),
+    body('email').isEmail().withMessage('Invalid email format').normalizeEmail({  gmail_remove_dots: false,
+        all_lowercase: false}),
     body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
 ];
 
