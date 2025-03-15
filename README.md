@@ -193,8 +193,7 @@ A Postman collection (`order-processing-system.postman_collection.json`) is incl
 ## Architecture
 
 1. **Client/User:**
-    - Places an order via API.
-    - Receives confirmation email.
+    - Creates user.
 2. **Order Service (Express.js + MongoDB):**
     - Handles order creation.
     - Validates inventory.
