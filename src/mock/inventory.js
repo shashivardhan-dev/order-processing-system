@@ -5,4 +5,24 @@ const inventory = [
     { "productId": "gloves1", "stock": 8, "price": 10 }
 ]
 
-export default inventory;
+const findItem = (productId) => inventory.find((item) => item.productId === productId);
+
+const deductStock = (productId, quantity) => {
+  const item = findItem(productId);
+  if (item && item.stock >= quantity) {
+    item.stock -= quantity;
+    return true;
+  }
+  return false;
+};
+
+const addStock = (productId, quantity) => {
+  const item = findItem(productId);
+  if (item) {
+    item.stock += quantity;
+    return true;
+  }
+  return false;
+};
+
+export default { findItem, deductStock, addStock };

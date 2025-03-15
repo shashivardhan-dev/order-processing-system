@@ -13,7 +13,7 @@ const register = async (req, res) => {
             return res.status(400).json({ status: false, message: errors.array() });
         }
         const { name, email, password } = req.body;
-        console.log(email)
+ 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             logger.error(`User already exists with email ${email}`);
@@ -52,6 +52,7 @@ const login = async (req, res) => {
         const refreshToken = jwt.sign({ userId: user._id }, config.refreshTokenJwtSecret, { expiresIn: '7d' });
         return res.status(200).json({ accessToken, refreshToken });
     } catch (error) {
+        console.log(error)
         logger.error("Unexpected error while logging in user", error);
         return res.status(500).json({ status: false, message: ['Internal server error'] });
     }
@@ -70,9 +71,10 @@ const refreshToken = async (req, res) => {
             return res.status(403).json({ status: false, message: ['Access denied'] });
         }
         const verified = jwt.verify(refreshToken, config.refreshTokenJwtSecret);
-        const accessToken = jwt.sign({ userId: verified.userId }, config.jwtSecret, { expiresIn: '15m' });
+        const accessToken = jwt.sign({ userId: verified.userId }, config.accessTokenJwtSecret, { expiresIn: '15m' });
         return res.status(200).json({ accessToken });
     } catch (error) {
+        console.log(error)
         logger.error("Error while refreshing token", error);
         return res.status(500).json({ status: false, message: ['Internal server error'] });
     }

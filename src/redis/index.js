@@ -8,7 +8,8 @@ redisClient.connect();
 
 const addOrder = (order) => {
     try {
-        redisClient.setEx(order.id, 600, JSON.stringify(order));
+
+        redisClient.setEx(order._id?.toString(), 600, JSON.stringify(order));
     } catch (error) {
         logger.error("Error while adding order in redis", error);
     }

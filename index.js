@@ -22,6 +22,8 @@ startWorker();
 
 app.use("/api", routes)
 
+console.log(config)
+
 app.listen(config.port, () => {
     logger.info(`Server is running on http://localhost:${config.port}`);
 });

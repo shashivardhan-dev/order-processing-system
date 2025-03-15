@@ -1,6 +1,6 @@
 import { validationResult } from 'express-validator';
 import Order from "../models/order.js";
-import inventory from "../mock/inventory.js";
+import mockInventory from '../mock/inventory.js';
 import awsServiceFactory from "../aws/index.js";
 import redisClient from "../redis/index.js";
 import logger from '../logger/index.js';
@@ -19,19 +19,24 @@ const createOrder = async (req, res) => {
     let totalAmount = 0;
 
     const updatedItems = items.map(item => {
-      const inventoryData = inventory.find(inv => inv.productId === item.productId);
+      const inventoryData = mockInventory.findItem(item.productId);
       if (!inventoryData || inventoryData.stock < item.quantity) {
         logger.error(`Item out of stock while creating order for user ${userId}`);
         return res.status(400).send({ status: false, message: ['Item out of stock'] });
       }
-      
+
       const pricePerItem = inventoryData.price;
       totalAmount += pricePerItem * item.quantity;
-    
       return { ...item, pricePerItem };
     });
 
-    const newOrder = new Order({ userId, updatedItems, totalAmount });
+    items.forEach((item) => {
+      if (!mockInventory.deductStock(item.productId, item.quantity)) {
+        throw new Error(`Failed to deduct stock for ${item.productId}`);
+      }
+    })
+
+    const newOrder = new Order({ userId, items: updatedItems, totalAmount });
     await newOrder.save();
 
     await SqsService.sendMessage(newOrder._id);
@@ -53,7 +58,7 @@ const getOrderById = async (req, res) => {
     }
     const { id } = req.params;
     const cachedOrder = await redisClient.getOrder(id);
-    if (cachedOrder) return res.json(JSON.parse(cachedOrder));
+    if (cachedOrder) return res.json({ status: true, message: ['Order found'], data: cachedOrder });
 
     const order = await Order.findById(id);
     if (!order) {
@@ -62,7 +67,7 @@ const getOrderById = async (req, res) => {
     }
 
     await redisClient.addOrder(order);
-    res.json(order);
+    return res.status(200).json({ status: true, message: ['Order found'], data: order });
   } catch (error) {
     logger.error("Unexpected error while getting order", error);
     return res.status(500).send({ status: false, message: ['Internal server error'] });
